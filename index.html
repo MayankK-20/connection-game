@@ -83,49 +83,60 @@
           <h3>server/</h3>
           <ul>
             <li><strong>GameServer.java</strong>
-              <div class="meta">Main server process. Responsibilities:
+              <div class="meta">This is the primary game server component. Responsibilities:
                 <ul>
-                  <li>Open a <code>ServerSocket</code> and accept client connections.</li>
-                  <li>Spawn a <code>ClientHandler</code> thread for each connected client.</li>
-                  <li>Maintain authoritative <code>GameState</code> and broadcast updates to clients.</li>
+                  <li>Establishes an <code>ServerSocket</code> which accept client connections.</li>
+                  <li>Spawns a <code>ClientHandler</code> thread for each connected client.</li>
+                  <li>Manages authoritative <code>GameState</code> and broadcasts updates to all connected clients.</li>
                 </ul>
               </div>
             </li>
 
             <li><strong>ClientHandler.java</strong>
-              <div class="meta">Per-client worker that:
+              <div class="meta">Each client has its own worker thread called ClientHandler. Responsibilities:
                 <ul>
-                  <li>Reads raw messages from the client's socket and converts them into <code>Message</code> objects.</li>
-                  <li>Handles client actions (submit-word, hint, press-connection, secret-guess, guess-W) and applies server-side validation.</li>
-                  <li>Sends state updates, timer events and reveal messages back to the client.</li>
+                  <li>Reads raw messages sent by client through socket and converting into <code>Message</code> objects.</li>
+                  <li>Handles client actions - submit-word, hint, press-connection, secret-guess, guess-W and applies server-side validation.</li>
+                  <li>Sending state updates, timer events and reveal messages back to the client.</li>
                 </ul>
               </div>
             </li>
 
             <li><strong>TimerManager.java</strong>
-              <div class="meta">Centralized timer utility used by the server for:
+              <div class="meta">Provide centralized timer support for the server to support game timing rules. Responsibilities:
                 <ul>
-                  <li>60s hint window (starts when a hint is posted).</li>
-                  <li>10s secret-guess window (after connection press).</li>
-                  <li>Per-prefix life tracking and scheduling tasks to trigger life loss / reveal next letter.</li>
+                  <li>60s hint window - time after a hint has been given that it will disappear.</li>
+                  <li>10s secret-guess window - time a player can guesses on the secret word after they have pressed the "connect" button.</li>
+                  <li>Per-prefix life tracking and scheduling tasks to trigger life loss and reveal next letter.</li>
                 </ul>
               </div>
             </li>
 
             <li><strong>Message.java</strong>
-              <div class="meta">Server-side protocol object (used when reading raw socket input). Typical fields:
+              <div class="meta">Represents protocol object sent from the server to the client when reading raw data from the socket. Typical fields:
                 <ul>
-                  <li><code>type</code> (e.g., HINT, CONNECTION, SECRET_GUESS, SUBMIT_WORD, UPDATE_STATE)</li>
-                  <li><code>from</code> (player id or name)</li>
-                  <li><code>payload</code> (map or JSON string)</li>
+                  <li><code>type</code> - HINT, CONNECTION, SECRET_GUESS, SUBMIT_WORD, UPDATE_STATE</li>
+                  <li><code>from</code> - player id or name</li>
+                  <li><code>payload</code> - map or JSON string</li>
                 </ul>
               </div>
             </li>
 
             <li><strong>GameState.java</strong>
-              <div class="meta">Authoritative game model: stores the current prefix <strong>X</strong>, the hidden word's length, revealed letters, current lives left, player list and roles. Server methods include:
+              <div class="meta">Represents authoritative state of game including : 
                 <ul>
-                  <li><code>revealNextLetter()</code>, <code>decrementLife()</code>, <code>resetLives()</code>, <code>checkWin()</code>.</li>
+                  <li>the current prefix <strong>X</strong></li>
+                  <li>the hidden word's length</li>
+                  <li>revealed letters</li>
+                  <li>current lives left</li>
+                  <li>player list and roles</li>
+                </ul>
+                  Server methods includes:
+                <ul>
+                  <li><code>revealNextLetter()</code></li>  
+                  <li><code>decrementLife()</code></li>
+                  <li><code>resetLives()</code></li>
+                  <li><code>checkWin()</code></li>
                 </ul>
               </div>
             </li>
@@ -136,49 +147,52 @@
           <h3>client/</h3>
           <ul>
             <li><strong>GuiClient.java</strong>
-              <div class="meta">Client-side UI implementation (JavaFX in your repo). Responsibilities:
+              <div class="meta">Represents UI implementation of Client-side. Responsibilities:
                 <ul>
-                  <li>Render the game: current prefix X, lives left, hint input, Connection button, chat/log and countdown timers.</li>
+                  <li>Render game and its components: current prefix X, lives left, hint input, Connection button, chat/log and countdown timers.</li>
                   <li>Handle UI events and call <code>ClientController</code> for network operations.</li>
                 </ul>
               </div>
             </li>
 
             <li><strong>ClientController.java</strong>
-              <div class="meta">Networking layer for the client:
+              <div class="meta">Represents networking layer for the client:
                 <ul>
-                  <li>Maintain a persistent <code>Socket</code> to the server and send/receive <code>Message</code> JSONs.</li>
-                  <li>Expose methods like <code>sendHint()</code>, <code>pressConnection()</code>, <code>submitSecretGuess()</code>, and <code>submitWord()</code> for the UI to call.</li>
+                  <li>Maintain a persistent <code>Socket</code> to the server and send/receive <code>Message</code>
+                    JSONs.</li>
+                  <li>Expose methods - <code>sendHint()</code>, <code>pressConnection()</code>,
+                    <code>submitSecretGuess()</code>, and <code>submitWord()</code> for the UI to call.</li>
                 </ul>
               </div>
             </li>
 
             <li><strong>ParsedMessage.java</strong>
-              <div class="meta">Client-side helper that converts raw <code>Message</code> payloads into richer objects for the UI (helpers like <code>isUpdate()</code>, <code>getRemainingTime()</code>).</div>
+              <div class="meta">Client-side helper that converts raw <code>Message</code> payloads into richer objects
+                for UI with helpers - <code>isUpdate()</code>, <code>getRemainingTime()</code>.</div>
             </li>
 
           </ul>
         </div>
       </div>
 
-       </section>
+    </section>
 
     <section class="card" id="networking">
       <h2>Networking</h2>
-      <p>The project uses a classic client–server architecture with TCP sockets. High-level networking notes:</p>
+      <p>The project is based on a classic client-server architecture uses TCP sockets. High-level networking notes:</p>
       <ul>
-        <li><strong>Transport:</strong> Java <code>ServerSocket</code> on the server and <code>Socket</code> on the client. Each client connection is handled concurrently by a <code>ClientHandler</code> thread.</li>
-        <li><strong>Protocol:</strong> Small JSON messages or a lightweight line-based protocol. Message envelope contains <code>type</code>, <code>from</code> and a <code>payload</code>.</li>
-        <li><strong>Authority:</strong> Server holds the canonical <code>GameState</code>. Clients only send action requests and the server validates and broadcasts resulting state changes.</li>
-        <li><strong>Timers:</strong> Timers run server-side (via <code>TimerManager</code>) to prevent client tampering. The server sends countdown updates for UI display.</li>
-        <li><strong>Secret guesses:</strong> Submitted privately to the server; the server holds them until the 10s window ends and then resolves the result.</li>
+        <li><strong>Transport:</strong> Java <code>ServerSocket</code> on the server and <code>Socket</code> on the client. Each client connection is being handled concurrently by a <code>ClientHandler</code> thread.</li>
+        <li><strong>Protocol:</strong> Message envelope consist of following parameters - <code>type</code>, <code>from</code> and a <code>payload</code>.</li>
+        <li><strong>Authority:</strong> Server holds and maintains <code>GameState</code>. Clients only send action requests and server validates and broadcast changes in state.</li>
+        <li><strong>Timers:</strong> Timers run on server-side via <code>TimerManager</code> for preventing any client tampering. The server sends countdown updates for UI display.</li>
+        <li><strong>Secret guesses:</strong> Submitted to the server privately and hold them till the 10 sec window ends and then evaluate the result.</li>
       </ul>
     </section>
 
     <section class="card" id="demo-github">
       <h2>Demo &amp; Repository</h2>
-      <p>Demo video (placeholder): <a class="button" href="#">Watch demo video</a></p>
-      <p>GitHub repo (placeholder): <a class="button" href="#">Open GitHub repository</a></p>
+      <p>Demo video: <a class="button" href="#">Watch demo video</a></p>
+      <p>GitHub repo: <a class="button" href="#">Open GitHub repository</a></p>
     </section>
 
     <section class="card" id="team">
@@ -192,15 +206,9 @@
       </p>
     </section>
 
-  
+
   </div>
 
-  <script>
-    function saveTeam(){
-      const v = document.getElementById('teamNames').value.trim();
-      document.getElementById('saved').textContent = v ? 'Saved: ' + v : 'No names entered';
-    }
-  </script>
 </body>
-</html>
 
+</html>
